@@ -21,3 +21,13 @@ The application currently uses:
 
 ```csharp
 builder.Services.AddSingleton<IBlogRepository, JsonBlogRepository>();
+```
+
+This stores blog posts in the `data/posts.json` file.
+
+### Switching to the In-Memory Repository
+
+To switch to the in-memory repository, change the registration in `Program.cs` to:
+
+```csharp
+builder.Services.AddSingleton<IBlogRepository, InMemoryBlogRepository>();
