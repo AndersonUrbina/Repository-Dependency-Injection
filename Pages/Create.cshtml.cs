@@ -1,6 +1,8 @@
 using MicroBlog.Models;
+using Repository_DependencyInjection.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Repository_DependencyInjection.Models;
 
 namespace MicroBlog.Pages
 {
@@ -8,37 +10,40 @@ namespace MicroBlog.Pages
     {
         [BindProperty]
         public Post Post { get; set; }
+
+        private readonly IBlogRepository _blogRepository;
+
+        public CreateModel(IBlogRepository blogRepository)
+        {
+            _blogRepository = blogRepository;
+        }
+
         public IActionResult OnPost()
         {
             if (!ModelState.IsValid)
             {
-                // Show contact contact page again
                 return Page();
             }
-            else
-            {
-                //Set post ID as an auto-incrementing value based on the number of posts in the database
-                List<Post> posts = System.Text.Json.JsonSerializer.Deserialize<List<Post>>(System.IO.File.ReadAllText("data/posts.json")) ?? new List<Post>();
-                Post.Id = posts.Count > 0 ? posts.Max(p => p.Id) + 1 : 1;
 
-                //Set the CreatedUtc property to the current UTC time
-                Post.CreatedUtc = DateTime.UtcNow;
+            // Set post ID as an auto-incrementing value
+            var posts = _blogRepository.GetAll().ToList();
+            Post.Id = posts.Count > 0 ? posts.Max(p => p.Id) + 1 : 1;
 
-                // Save post to database
-                posts.Add(Post);
-                var json = System.Text.Json.JsonSerializer.Serialize(posts);
-                System.IO.File.WriteAllText("data/posts.json", json);
+            // Set the CreatedUtc property to the current UTC time
+            Post.CreatedUtc = DateTime.UtcNow;
 
-                //Redirect to the index page after the post is created
-                return RedirectToPage("/Index");
-            }
+            // Save the post using the repository
+            _blogRepository.Add(Post);
+            _blogRepository.Save();
 
-            //PLAN
-            //create the page to create a new post
-            //save the posts on a .json file
-            //pull the posts from the .json file and display them on the index page
-            //click on a post on the index page and then redirect to the details page where all the details of the post are displayed
-
+            // Redirect to the index page after the post is created
+            return RedirectToPage("/Index");
         }
     }
 }
+
+//PLAN
+//create the page to create a new post
+//save the posts on a .json file
+//pull the posts from the .json file and display them on the index page
+//click on a post on the index page and then redirect to the details page where all the details of the post are displayed

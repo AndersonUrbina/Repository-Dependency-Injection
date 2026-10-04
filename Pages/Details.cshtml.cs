@@ -1,7 +1,7 @@
 using MicroBlog.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Hosting;
+using Repository_DependencyInjection.Models;
 
 namespace MicroBlog.Pages
 {
@@ -14,15 +14,20 @@ namespace MicroBlog.Pages
         //Fetch article by Id
         public Post Post { get; set; } = new Post();
 
+        private readonly IBlogRepository _blogRepository;
+
+        public DetailsModel(IBlogRepository blogRepository)
+        {
+            _blogRepository = blogRepository;
+        }
+
         public void OnGet()
         {
-            if (System.IO.File.Exists("data/posts.json"))
+            Post = _blogRepository.GetById(Id);
+
+            if (Post == null)
             {
-                Post = System.Text.Json.JsonSerializer.Deserialize<List<Post>>(System.IO.File.ReadAllText("data/posts.json"))?.FirstOrDefault(p => p.Id == Id);
-            }
-            else
-            {
-                //Show message if no posts found
+                // Show message if no post is found
                 ViewData["Message"] = "No posts found.";
             }
         }
