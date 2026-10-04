@@ -31,3 +31,6 @@ To switch to the in-memory repository, change the registration in `Program.cs` t
 
 ```csharp
 builder.Services.AddSingleton<IBlogRepository, InMemoryBlogRepository>();
+```
+
+The in-memory repository starts with an empty list each time the application starts. Posts created while using the in-memory repository are only stored for the current application session and are not saved to `data/posts.json`.
